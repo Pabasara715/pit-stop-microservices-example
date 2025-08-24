@@ -3,10 +3,9 @@ name: Build, Push, and Deploy to EKS
 on:
   push:
     branches:
-      - main # Triggers on push to the main branch
-  workflow_dispatch: # Allows you to run it manually from the Actions tab
+      - main
+  workflow_dispatch:
 
-# Required permissions for OIDC to work
 permissions:
   id-token: write
   contents: read
@@ -20,28 +19,25 @@ jobs:
 
       - name: Find Changed Service
         id: changed_files
-        # This action finds which files have changed in the 'src' directory
         uses: tj-actions/changed-files@v35
         with:
           files: |
             src/**
+          files_ignore: |
+            src/k8s/**
 
       - name: Set Service Name from Path
         id: set_service
-        # This step only runs if a file in 'src/' was actually changed
         if: steps.changed_files.outputs.any_changed == 'true'
         run: |
-          # It takes the path of the first changed file (e.g., src/WebApp/...)
-          # It then extracts just the service folder name (WebApp) and converts it to lowercase (webapp)
           SERVICE_PATH=$(echo "${{ steps.changed_files.outputs.all_changed_files }}" | head -n 1 | cut -d'/' -f2)
           echo "service_name=${SERVICE_PATH,,}" >> $GITHUB_OUTPUT
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          # Uses the ARN from your GitHub secret to assume the role we created
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: us-east-1 # Must match your EKS cluster region
+          aws-region: us-east-1
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -52,11 +48,9 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           SERVICE_NAME: ${{ steps.set_service.outputs.service_name }}
-          # Uses the unique commit hash as the image tag for traceability
           IMAGE_TAG: ${{ github.sha }}
         run: |
           echo "Building service: $SERVICE_NAME"
-          # Dynamically builds the correct Dockerfile based on the changed service
           docker build -t $ECR_REGISTRY/pitstop/$SERVICE_NAME:$IMAGE_TAG -f src/$SERVICE_NAME/Dockerfile src/$SERVICE_NAME
           docker push $ECR_REGISTRY/pitstop/$SERVICE_NAME:$IMAGE_TAG
 
@@ -73,5 +67,4 @@ jobs:
         run: |
           cd src/k8s/scripts
           chmod +x start-all.sh
-          # Deploys all services using the Istio-enabled manifests
           ./start-all.sh --istio
