@@ -67,7 +67,7 @@ jobs:
           echo "$PWD/istio-1.26.0/bin" >> $GITHUB_PATH
           
           # Verify installation
-          istioctl version --client
+          istioctl version --remote=false
 
       - name: Install Istio Control Plane
         run: |
@@ -79,15 +79,32 @@ jobs:
             echo "Installing Istio control plane..."
             istioctl install --set values.defaultRevision=default -y
           else
-            echo "Istio control plane already exists, skipping installation..."
+            echo "Istio namespace already exists, checking control plane..."
+            if ! kubectl get deployment -n istio-system istiod &> /dev/null; then
+              echo "Installing Istio control plane..."
+              istioctl install --set values.defaultRevision=default -y
+            else
+              echo "Istio control plane already installed, skipping..."
+            fi
           fi
           
-          # Apply additional configurations
+          # Apply additional configurations from the istio directory
           cd src/k8s/istio
           chmod +x *.sh
           
-          # Run the install script (modify it to skip istioctl install if needed)
-          ./install-istio.sh || echo "Some Istio components may already exist, continuing..."
+          # Run the install script with error handling
+          if [ -f "./install-istio.sh" ]; then
+            ./install-istio.sh || {
+              echo "Some Istio components may already exist or failed to apply, continuing..."
+              exit_code=$?
+              if [ $exit_code -ne 0 ] && [ $exit_code -ne 1 ]; then
+                echo "Critical error in Istio installation, exiting..."
+                exit $exit_code
+              fi
+            }
+          else
+            echo "install-istio.sh not found, skipping additional Istio configuration..."
+          fi
 
       - name: Deploy All Services to EKS
         run: |
