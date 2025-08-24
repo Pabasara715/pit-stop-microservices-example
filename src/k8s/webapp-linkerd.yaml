@@ -24,7 +24,7 @@ spec:
       - env:
         - name: ASPNETCORE_ENVIRONMENT
           value: Production
-        image: pitstop/webapp:1.0
+        image: 058264430765.dkr.ecr.us-east-1.amazonaws.com/pitstop/webapp:1.0
         imagePullPolicy: IfNotPresent
         name: webapp
         ports:
