@@ -65,7 +65,6 @@ jobs:
       - name: Install Istio Control Plane
         run: |
           cd src/k8s/istio
-          # --- FIX: Make all scripts in the directory executable ---
           chmod +x *.sh
           ./install-istio.sh
 
