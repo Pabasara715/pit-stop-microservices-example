@@ -22,7 +22,7 @@ spec:
       - env:
         - name: DOTNET_ENVIRONMENT
           value: Production
-        image: pitstop/auditlogservice:1.0
+        image: 058264430765.dkr.ecr.us-east-1.amazonaws.com/pitstop/auditlogservice:1.0
         imagePullPolicy: IfNotPresent
         name: auditlogservice
       restartPolicy: Always
