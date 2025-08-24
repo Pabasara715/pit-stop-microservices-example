@@ -57,10 +57,16 @@ jobs:
       - name: Set up kubectl for EKS
         run: aws eks update-kubeconfig --name pitstop-cluster --region us-east-1
 
-      - name: Install Istio
+      - name: Install istioctl
+        run: |
+          curl -L https://istio.io/downloadIstio | sh -
+          echo "$HOME/.istioctl/bin" >> $GITHUB_PATH
+
+      - name: Install Istio Control Plane
         run: |
           cd src/k8s/istio
-          chmod +x install-istio.sh
+          # --- FIX: Make all scripts in the directory executable ---
+          chmod +x *.sh
           ./install-istio.sh
 
       - name: Deploy All Services to EKS
