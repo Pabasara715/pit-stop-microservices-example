@@ -20,14 +20,15 @@ spec:
       annotations:
         sidecar.istio.io/inject: "true"
     spec:
+
       containers:
       - env:
-        - name: ASPNETCORE_ENVIRONMENT
-          value: Production
-        image: pabasaravihanga/pitstop-customermanagementapi:1.0
-        imagePullPolicy: IfNotPresent
+          - name: ASPNETCORE_ENVIRONMENT
+            value: Production
+        image: pabasaravihanga/pitstop-customermanagementapi:latest
+        imagePullPolicy: Always
         name: customermanagementapi
         ports:
-        - containerPort: 5100
+          - containerPort: 5100
       restartPolicy: Always
   

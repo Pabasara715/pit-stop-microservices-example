@@ -18,15 +18,16 @@ spec:
         app: vehiclemanagementapi
         version: "1.0"
     spec:
+
       containers:
       - env:
-        - name: ASPNETCORE_ENVIRONMENT
-          value: Production
-        image: pabasaravihanga/pitstop-vehiclemanagementapi:1.0
-        imagePullPolicy: IfNotPresent
+          - name: ASPNETCORE_ENVIRONMENT
+            value: Production
+        image: pabasaravihanga/pitstop-vehiclemanagementapi:latest
+        imagePullPolicy: Always
         name: vehiclemanagementapi
         ports:
-        - containerPort: 5000
+          - containerPort: 5000
       restartPolicy: Always
 
 ---
