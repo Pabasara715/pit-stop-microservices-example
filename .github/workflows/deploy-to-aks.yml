@@ -75,8 +75,12 @@ jobs:
       - name: Deploy All Services to AKS
         env:
           IMAGE_TAG: ${{ github.sha }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         run: |
           cd src/k8s/scripts
           chmod +x start-all.sh
           # Pass the Istio flag and the new tag to the deployment script
           ./start-all.sh --istio --tag $IMAGE_TAG
+          for yaml in ../*.yaml; do
+            sed -i "s|image: $DOCKERHUB_USERNAME/pitstop-\([a-zA-Z0-9\-]*\):[a-zA-Z0-9._-]*|image: $DOCKERHUB_USERNAME/pitstop-\1:$IMAGE_TAG|g" "$yaml"
+          done
