@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Default values
-IMAGE_TAG="1.0"
+IMAGE_TAG="latest"
 ISTIO=false
 MESH_POSTFIX=""
 
@@ -29,7 +29,11 @@ echo "Updating image tags in YAML files..."
 for yaml in ../*.yaml; do
     if [ -f "$yaml" ]; then
         # This regex finds 'image: username/pitstop-servicename:anything' and replaces the tag
-        sed -i "s|image: pabasaravihanga/pitstop-\([a-zA-Z0-9\-]*\):.*|image: pabasaravihanga/pitstop-\1:$IMAGE_TAG|g" "$yaml"
+        # Only update if the image is from our repository
+        if grep -q "image: pabasaravihanga/pitstop-" "$yaml"; then
+            sed -i "s|\(image: pabasaravihanga/pitstop-[a-zA-Z0-9\-]*\):.*|\1:$IMAGE_TAG|g" "$yaml"
+            echo "Updated image tag in $yaml to $IMAGE_TAG"
+        fi
     fi
 done
 
