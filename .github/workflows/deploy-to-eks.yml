@@ -1,4 +1,4 @@
-name: Build, Push, and Deploy to EKS
+name: Build, Push, and Deploy to AKS
 
 on:
   push:
@@ -7,7 +7,6 @@ on:
   workflow_dispatch:
 
 permissions:
-  id-token: write
   contents: read
 
 jobs:
@@ -33,78 +32,48 @@ jobs:
           SERVICE_PATH=$(echo "${{ steps.changed_files.outputs.all_changed_files }}" | head -n 1 | cut -d'/' -f2)
           echo "service_name=${SERVICE_PATH,,}" >> $GITHUB_OUTPUT
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+      
+      - name: Login to Docker Hub
+        if: steps.changed_files.outputs.any_changed == 'true'
+        uses: docker/login-action@v2
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: us-east-1
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
-
-      - name: Build, Tag, and Push Image to ECR
+      - name: Build, Tag, and Push to Docker Hub
         if: steps.changed_files.outputs.any_changed == 'true'
         env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           SERVICE_NAME: ${{ steps.set_service.outputs.service_name }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
           echo "Building service: $SERVICE_NAME"
-          docker build -t $ECR_REGISTRY/pitstop/$SERVICE_NAME:$IMAGE_TAG -f src/$SERVICE_NAME/Dockerfile src/$SERVICE_NAME
-          docker push $ECR_REGISTRY/pitstop/$SERVICE_NAME:$IMAGE_TAG
+          docker build -t $DOCKERHUB_USERNAME/pitstop-$SERVICE_NAME:$IMAGE_TAG -f src/$SERVICE_NAME/Dockerfile src/$SERVICE_NAME
+          docker push $DOCKERHUB_USERNAME/pitstop-$SERVICE_NAME:$IMAGE_TAG
 
-      - name: Set up kubectl for EKS
-        run: aws eks update-kubeconfig --name pitstop-cluster --region us-east-1
+      
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Set kubectl context for AKS
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: 'pitstop-resources'
+          cluster-name: 'pitstop-lowcost-cluster'
+
+      
       - name: Install istioctl
         run: |
-          # Download and install Istio
-          curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.26.0 sh -
-          
-          # Add istioctl to PATH for current session
-          export PATH="$PWD/istio-1.26.0/bin:$PATH"
-          echo "$PWD/istio-1.26.0/bin" >> $GITHUB_PATH
-          
-          # Verify installation
-          istioctl version --remote=false
+          curl -L https://istio.io/downloadIstio | sh -
+          echo "$HOME/.istioctl/bin" >> $GITHUB_PATH
 
       - name: Install Istio Control Plane
         run: |
-          # Ensure istioctl is in PATH
-          export PATH="$PWD/istio-1.26.0/bin:$PATH"
-          
-          # Check if Istio is already installed
-          if ! kubectl get namespace istio-system 2>/dev/null | grep -q "Active"; then
-            echo "Installing Istio control plane..."
-            istioctl install --set values.defaultRevision=default -y
-          else
-            echo "Istio namespace already exists, checking control plane..."
-            if ! kubectl get deployment -n istio-system istiod &> /dev/null; then
-              echo "Installing Istio control plane..."
-              istioctl install --set values.defaultRevision=default -y
-            else
-              echo "Istio control plane already installed, skipping..."
-            fi
-          fi
-          
-          # Apply additional configurations from the istio directory
           cd src/k8s/istio
           chmod +x *.sh
-          
-          # Run the install script with error handling
-          if [ -f "./install-istio.sh" ]; then
-            ./install-istio.sh || {
-              echo "Some Istio components may already exist or failed to apply, continuing..."
-              exit_code=$?
-              if [ $exit_code -ne 0 ] && [ $exit_code -ne 1 ]; then
-                echo "Critical error in Istio installation, exiting..."
-                exit $exit_code
-              fi
-            }
-          else
-            echo "install-istio.sh not found, skipping additional Istio configuration..."
-          fi
+          ./install-istio.sh
 
       - name: Deploy All Services to EKS
         run: |
