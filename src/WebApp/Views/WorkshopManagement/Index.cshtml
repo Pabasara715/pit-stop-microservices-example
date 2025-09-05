@@ -2,40 +2,65 @@
 @{
     ViewData["Title"] = "Workshop Management";
 }
-<h3 id="PageTitle">Workshop Management - overview</h3>
 
-<div style="margin-top: 10px; margin-bottom: 10px;">
-    <a asp-action="Index" asp-controller="WorkshopManagement" asp-route-planningDate="@Model.Date.AddDays(-1).ToString("yyyy-MM-dd")" class="btn btn-default"><</a>
-    <span class="text-primary"><b>@Model.Date.ToString("dd-MM-yyyy")</b></span>
-    <a asp-action="Index" asp-controller="WorkshopManagement" asp-route-planningDate="@Model.Date.AddDays(1).ToString("yyyy-MM-dd")" class="btn btn-default">></a>
-    <a asp-action="Index" asp-controller="WorkshopManagement" asp-route-planningDate="@DateTime.Now.ToString("yyyy-MM-dd")" class="btn btn-default">Today</a>
+<div class="flex justify-between items-center pt-3 pb-2 mb-4 border-b border-gray-200">
+    <h1 class="text-2xl font-semibold text-gray-800">Workshop Schedule</h1>
+    <div class="flex items-center space-x-2">
+        <a asp-action="Index" asp-controller="WorkshopManagement" asp-route-planningDate="@Model.Date.AddDays(-1).ToString("yyyy-MM-dd")" class="bg-white hover:bg-gray-100 text-gray-600 font-bold py-2 px-3 rounded-lg border border-gray-300 transition duration-300" title="Previous Day">
+            <i class="fas fa-chevron-left"></i>
+        </a>
+        <span class="text-lg font-semibold text-primary-700">@Model.Date.ToString("dd MMMM yyyy")</span>
+        <a asp-action="Index" asp-controller="WorkshopManagement" asp-route-planningDate="@Model.Date.AddDays(1).ToString("yyyy-MM-dd")" class="bg-white hover:bg-gray-100 text-gray-600 font-bold py-2 px-3 rounded-lg border border-gray-300 transition duration-300" title="Next Day">
+            <i class="fas fa-chevron-right"></i>
+        </a>
+        <a asp-action="Index" asp-controller="WorkshopManagement" asp-route-planningDate="@DateTime.Now.ToString("yyyy-MM-dd")" class="text-sm text-primary-600 hover:underline ml-4">Today</a>
+    </div>
+    @if(Model.Date.Date >= DateTime.Now.Date)
+    {
+        <a id="RegisterMaintenanceJobButton" asp-action="New" asp-controller="WorkshopManagement" asp-route-planningDate="@Model.Date.ToString("yyyy-MM-dd")" class="bg-primary-600 hover:bg-primary-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 flex items-center">
+            <i class="fas fa-plus mr-2"></i> Schedule Job
+        </a>
+    }
 </div>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Status</th>
-            <th>Start Time</th>
-            <th>End Time</th>
-            <th>Vehicle</th>
-            <th>Description</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var job in Model.MaintenanceJobs)
-        {
-            <tr class="clickable @(job.Status == "Completed" ? "completedjob" : "")" onclick="location.href = '@(Url.Action("Details", "WorkshopManagement", new { planningDate = Model.Date.ToString("yyyy-MM-dd"), jobId = job.Id }))'">
-                <td>@job.Status</td>
-                <td>@job.StartTime.ToString("HH:mm")</td>
-                <td>@job.EndTime.ToString("HH:mm")</td>
-                <td>@job.Vehicle.Brand @job.Vehicle.Type [@job.Vehicle.LicenseNumber]</td>
-                <td>@job.Description</td>
+<div class="bg-white shadow-md rounded-lg overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
             </tr>
-        }
-    </tbody>
-</table>
-@if(Model.Date.Date >= DateTime.Now.Date)
-{
-    <a id="RegisterMaintenanceJobButton" asp-action="New" asp-controller="WorkshopManagement" asp-route-planningDate="@Model.Date.ToString("yyyy-MM-dd")" class="btn btn-default">Schedule Maintenance</a>
-}
-
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            @if (Model.MaintenanceJobs == null || !Model.MaintenanceJobs.Any())
+            {
+                <tr>
+                    <td colspan="4" class="px-6 py-4 text-center text-gray-500">No jobs scheduled for this day.</td>
+                </tr>
+            }
+            else
+            {
+                @foreach (var job in Model.MaintenanceJobs)
+                {
+                    <tr class="hover:bg-gray-50 cursor-pointer" onclick="location.href = '@(Url.Action("Details", "WorkshopManagement", new { planningDate = Model.Date.ToString("yyyy-MM-dd"), jobId = job.Id }))'">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @if (job.Status == "Completed")
+                            {
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Completed</span>
+                            }
+                            else
+                            {
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Planned</span>
+                            }
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">@job.StartTime.ToString("HH:mm") - @job.EndTime.ToString("HH:mm")</td>
+                        <td class="px-6 py-4 whitespace-nowrap">@job.Vehicle.Brand @job.Vehicle.Type <span class="font-mono text-gray-500">[@job.Vehicle.LicenseNumber]</span></td>
+                        <td class="px-6 py-4">@job.Description</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

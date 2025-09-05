@@ -7,40 +7,59 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
 }
 
-<h3 id="PageTitle">Workshop Management - schedule maintenance</h3>
+<div class="flex justify-between items-center pt-3 pb-2 mb-4 border-b border-gray-200">
+    <h1 class="text-2xl font-semibold text-gray-800">Schedule New Maintenance Job</h1>
+</div>
 
 @if (!string.IsNullOrEmpty(Model.Error))
 {
-    <div class="well-sm alert-danger">
-        <label>Unable to register: @Model.Error</label>
+    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
+        <p class="font-bold">Unable to register</p>
+        <p>@Model.Error</p>
     </div>
 }
 
+<div class="max-w-2xl mx-auto bg-white shadow-md rounded-lg p-6">
+    <form asp-controller="WorkshopManagement" asp-action="RegisterMaintenanceJob" method="post">
+        <div class="space-y-6">
+            <div>
+                <label asp-for="StartTime" class="block text-sm font-medium text-gray-700"></label>
+                <input asp-for="StartTime" type="text" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500" />
+                <span asp-validation-for="StartTime" class="text-sm text-red-600"></span>
+            </div>
 
-<form asp-controller="WorkshopManagement" asp-action="RegisterMaintenanceJob" method="post">
-    <div class="form-group">
-        <label asp-for="StartTime"></label>
-        <input asp-for="StartTime" type="text" class="form-control" />
-        <span asp-validation-for="StartTime" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="EndTime"></label>
-        <input asp-for="EndTime" type="text" class="form-control" />
-        <span asp-validation-for="EndTime" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="Description"></label>
-        <input asp-for="Description" type="text" class="form-control" />
-        <span asp-validation-for="Description" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="SelectedVehicleLicenseNumber"></label>
-        <select asp-for="SelectedVehicleLicenseNumber" asp-items="Model.Vehicles" class="form-control"></select>
-        <span asp-validation-for="SelectedVehicleLicenseNumber" class="text-danger"></span>
-    </div>
-    <input asp-for="Date" type="hidden" />
-    <span><button id="SubmitButton" type="submit" class="btn btn-default">Register</button></span>
-    <span><a id="CancelButton" asp-action="Index" asp-route-planningDate="@Model.Date.ToString("yyyy-MM-dd")" asp-controller="WorkshopManagement" class="btn btn-default">Cancel</a></span>
-</form>
+            <div>
+                <label asp-for="EndTime" class="block text-sm font-medium text-gray-700"></label>
+                <input asp-for="EndTime" type="text" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500" />
+                <span asp-validation-for="EndTime" class="text-sm text-red-600"></span>
+            </div>
 
+            <div>
+                <label asp-for="Description" class="block text-sm font-medium text-gray-700"></label>
+                <textarea asp-for="Description" rows="4" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500"></textarea>
+                <span asp-validation-for="Description" class="text-sm text-red-600"></span>
+            </div>
 
+            <div>
+                <label asp-for="SelectedVehicleLicenseNumber" class="block text-sm font-medium text-gray-700">Vehicle</label>
+                <select asp-for="SelectedVehicleLicenseNumber" asp-items="Model.Vehicles" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                     <option value="">-- select a vehicle --</option>
+                </select>
+                <span asp-validation-for="SelectedVehicleLicenseNumber" class="text-sm text-red-600"></span>
+            </div>
+        </div>
+
+        <input asp-for="Date" type="hidden" />
+
+        <div class="mt-8 pt-5 border-t border-gray-200">
+            <div class="flex justify-end space-x-3">
+                <a id="CancelButton" asp-action="Index" asp-route-planningDate="@Model.Date.ToString("yyyy-MM-dd")" asp-controller="WorkshopManagement" class="bg-white hover:bg-gray-100 text-gray-700 font-bold py-2 px-4 rounded-lg border border-gray-300 transition duration-300">
+                    Cancel
+                </a>
+                <button id="SubmitButton" type="submit" class="bg-primary-600 hover:bg-primary-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
+                    Register Job
+                </button>
+            </div>
+        </div>
+    </form>
+</div>

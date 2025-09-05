@@ -3,60 +3,73 @@
     ViewData["Title"] = "Planning Details";
 }
 
-<h3 id="PageTitle">Workshop Management - details</h3>
-
-<table class="table">
-    <tbody>
-        <tr>
-            <td width="150">Date :</td>
-            <td><b>@Model.Date.ToString("dd-MM-yyyy")</b></td>
-        </tr>
-        <tr>
-            <td width="150">Status :</td>
-            <td id="JobStatus"><b>@Model.MaintenanceJob.Status</b></td>
-        </tr>
-        <tr>
-            <td width="150">Start time :</td>
-            <td><b>@Model.MaintenanceJob.StartTime.ToString("HH:mm")</b></td>
-        </tr>
-        <tr>
-            <td width="150">End time :</td>
-            <td><b>@Model.MaintenanceJob.EndTime.ToString("HH:mm")</b></td>
-        </tr>
-        <tr>
-            <td width="150">Description :</td>
-            <td><b>@Model.MaintenanceJob.Description</b></td>
-        </tr>
-        <tr>
-            <td width="150">Vehicle :</td>
-            <td><b><a href='@(Url.Action("Details", "VehicleManagement", new { licenseNumber = Model.MaintenanceJob.Vehicle.LicenseNumber }))'>@Model.MaintenanceJob.Vehicle.Brand @Model.MaintenanceJob.Vehicle.Type [@Model.MaintenanceJob.Vehicle.LicenseNumber]</a></b></td>
-        </tr>
-        <tr>
-            <td width="150">Owner :</td>
-            <td><b><a href='@(Url.Action("Details", "CustomerManagement", new { id = Model.MaintenanceJob.Customer.CustomerId }))'>@Model.MaintenanceJob.Customer.Name [@Model.MaintenanceJob.Customer.TelephoneNumber]</a></b></td>
-        </tr>
-        @if (Model.MaintenanceJob.Status != "Planned")
+<div class="flex justify-between items-center pt-3 pb-2 mb-4 border-b border-gray-200">
+    <h1 class="text-2xl font-semibold text-gray-800">Maintenance Job Details</h1>
+    <div>
+        <a id="BackButton" asp-action="Index" asp-controller="WorkshopManagement" asp-route-planningDate="@Model.Date.ToString("yyyy-MM-dd")" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg transition duration-300 inline-flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Schedule
+        </a>
+        @if (Model.MaintenanceJob.Status != "Completed")
         {
-            <tr>
-                <td width="150">Actual Start time :</td>
-                <td><b>@Model.MaintenanceJob.ActualStartTime</b></td>
-            </tr>
-            <tr>
-                <td width="150">Actual End time :</td>
-                <td><b>@Model.MaintenanceJob.ActualEndTime</b></td>
-            </tr>
-            <tr>
-                <td width="150">Mechanic notes :</td>
-                <td><b>@Model.MaintenanceJob.Notes</b></td>
-            </tr>
+            <a id="CompleteButton" asp-action="Finish" asp-controller="WorkshopManagement" asp-route-planningDate="@Model.Date.ToString("yyyy-MM-dd")" asp-route-jobId="@Model.MaintenanceJob.Id" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300 inline-flex items-center ml-2">
+                <i class="fas fa-check-circle mr-2"></i> Complete Job
+            </a>
         }
-    </tbody>
-</table>
-<span><a id="BackButton" asp-action="Index" asp-controller="WorkshopManagement" asp-route-planningDate="@Model.Date.ToString("yyyy-MM-dd")" class="btn btn-default">Back</a></span>
-@if (Model.MaintenanceJob.Status != "Completed" )
-{ 
-    <span><a id="CompleteButton" asp-action="Finish" asp-controller="WorkshopManagement" asp-route-planningDate="@Model.Date.ToString("yyyy-MM-dd")" asp-route-jobId="@Model.MaintenanceJob.Id" class="btn btn-default">Complete</a></span>
-}
+    </div>
+</div>
 
+<div class="bg-white shadow-md rounded-lg p-6">
+    <div>
+        <h3 class="text-lg font-semibold text-gray-800 border-b pb-2 mb-3 flex items-center">
+            <i class="fas fa-calendar-alt text-primary-600 mr-3"></i> Job Details
+        </h3>
+        <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+            <div><dt class="text-sm font-medium text-gray-500">Date</dt><dd class="text-sm text-gray-900 font-semibold">@Model.Date.ToString("dd MMMM yyyy")</dd></div>
+            <div><dt class="text-sm font-medium text-gray-500">Status</dt><dd class="text-sm text-gray-900">
+                @if (Model.MaintenanceJob.Status == "Completed")
+                {
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Completed</span>
+                }
+                else
+                {
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Planned</span>
+                }
+            </dd></div>
+            <div><dt class="text-sm font-medium text-gray-500">Planned Start</dt><dd class="text-sm text-gray-900">@Model.MaintenanceJob.StartTime.ToString("HH:mm")</dd></div>
+            <div><dt class="text-sm font-medium text-gray-500">Planned End</dt><dd class="text-sm text-gray-900">@Model.MaintenanceJob.EndTime.ToString("HH:mm")</dd></div>
+            <div class="col-span-2"><dt class="text-sm font-medium text-gray-500">Description</dt><dd class="text-sm text-gray-900">@Model.MaintenanceJob.Description</dd></div>
+        </dl>
+    </div>
 
+    <div class="mt-6">
+        <h3 class="text-lg font-semibold text-gray-800 border-b pb-2 mb-3 flex items-center">
+            <i class="fas fa-car text-primary-600 mr-3"></i> Vehicle & Owner
+        </h3>
+        <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+            <div><dt class="text-sm font-medium text-gray-500">Vehicle</dt><dd class="text-sm text-primary-600 hover:underline">
+                <a href='@(Url.Action("Details", "VehicleManagement", new { licenseNumber = Model.MaintenanceJob.Vehicle.LicenseNumber }))'>
+                    @Model.MaintenanceJob.Vehicle.Brand @Model.MaintenanceJob.Vehicle.Type [@Model.MaintenanceJob.Vehicle.LicenseNumber]
+                </a>
+            </dd></div>
+            <div><dt class="text-sm font-medium text-gray-500">Owner</dt><dd class="text-sm text-primary-600 hover:underline">
+                <a href='@(Url.Action("Details", "CustomerManagement", new { id = Model.MaintenanceJob.Customer.CustomerId }))'>
+                    @Model.MaintenanceJob.Customer.Name [@Model.MaintenanceJob.Customer.TelephoneNumber]
+                </a>
+            </dd></div>
+        </dl>
+    </div>
 
+    @if (Model.MaintenanceJob.Status != "Planned")
+    {
+        <div class="mt-6">
+            <h3 class="text-lg font-semibold text-gray-800 border-b pb-2 mb-3 flex items-center">
+                <i class="fas fa-clipboard-check text-primary-600 mr-3"></i> Completion Details
+            </h3>
+            <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                <div><dt class="text-sm font-medium text-gray-500">Actual Start</dt><dd class="text-sm text-gray-900">@Model.MaintenanceJob.ActualStartTime?.ToString("HH:mm")</dd></div>
+                <div><dt class="text-sm font-medium text-gray-500">Actual End</dt><dd class="text-sm text-gray-900">@Model.MaintenanceJob.ActualEndTime?.ToString("HH:mm")</dd></div>
+                <div class="col-span-2"><dt class="text-sm font-medium text-gray-500">Mechanic Notes</dt><dd class="text-sm text-gray-900 bg-gray-50 p-2 rounded">@Model.MaintenanceJob.Notes</dd></div>
+            </dl>
+        </div>
+    }
+</div>
