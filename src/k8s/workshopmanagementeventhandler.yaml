@@ -20,9 +20,9 @@ spec:
     spec:
       containers:
       - env:
-        - name: DOTNET_ENVIRONMENT
-          value: Production
-        image: pabasaravihanga/pitstop-workshopmanagementeventhandler:1.0
-        imagePullPolicy: IfNotPresent
+          - name: DOTNET_ENVIRONMENT
+            value: Production
+        image: pabasaravihanga/pitstop-workshopmanagementeventhandler:latest
+        imagePullPolicy: Always
         name: workshopmanagementeventhandler
       restartPolicy: Always

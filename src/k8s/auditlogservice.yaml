@@ -18,12 +18,13 @@ spec:
         app: auditlogservice
         version: "1.0"
     spec:
+
       containers:
       - env:
-        - name: DOTNET_ENVIRONMENT
-          value: Production
-        image: pabasaravihanga/pitstop-auditlogservice:1.0
-        imagePullPolicy: IfNotPresent
+          - name: DOTNET_ENVIRONMENT
+            value: Production
+        image: pabasaravihanga/pitstop-auditlogservice:latest
+        imagePullPolicy: Always
         name: auditlogservice
       restartPolicy: Always
 

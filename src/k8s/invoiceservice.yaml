@@ -18,11 +18,12 @@ spec:
         app: invoiceservice
         version: "1.0"
     spec:
+
       containers:
       - env:
-        - name: DOTNET_ENVIRONMENT
-          value: Production
-        image: pabasaravihanga/pitstop-invoiceservice:1.0
-        imagePullPolicy: IfNotPresent
+          - name: DOTNET_ENVIRONMENT
+            value: Production
+        image: pabasaravihanga/pitstop-invoiceservice:latest
+        imagePullPolicy: Always
         name: invoiceservice
       restartPolicy: Always

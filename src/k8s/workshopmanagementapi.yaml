@@ -18,15 +18,16 @@ spec:
         app: workshopmanagementapi
         version: "1.0"
     spec:
+
       containers:
       - env:
-        - name: ASPNETCORE_ENVIRONMENT
-          value: Production
-        image: pabasaravihanga/pitstop-workshopmanagementapi:1.0
-        imagePullPolicy: IfNotPresent
+          - name: ASPNETCORE_ENVIRONMENT
+            value: Production
+        image: pabasaravihanga/pitstop-workshopmanagementapi:latest
+        imagePullPolicy: Always
         name: workshopmanagementapi
         ports:
-        - containerPort: 5200
+          - containerPort: 5200
       restartPolicy: Always
 
 ---

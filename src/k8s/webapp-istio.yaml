@@ -57,15 +57,16 @@ spec:
       annotations:
         sidecar.istio.io/inject: "true"
     spec:
+
       containers:
       - env:
-        - name: ASPNETCORE_ENVIRONMENT
-          value: Production
-        image: pabasaravihanga/pitstop-webapp:1.0
-        imagePullPolicy: IfNotPresent
+          - name: ASPNETCORE_ENVIRONMENT
+            value: Production
+        image: pabasaravihanga/pitstop-webapp:latest
+        imagePullPolicy: Always
         name: webapp
         ports:
-        - containerPort: 7005
+          - containerPort: 7005
       restartPolicy: Always
 
 ---

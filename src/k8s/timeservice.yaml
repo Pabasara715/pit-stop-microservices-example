@@ -18,11 +18,12 @@ spec:
         app: timeservice
         version: "1.0"
     spec:
+
       containers:
       - env:
-        - name: DOTNET_ENVIRONMENT
-          value: Production
-        image: pabasaravihanga/pitstop-timeservice:1.0
-        imagePullPolicy: IfNotPresent
+          - name: DOTNET_ENVIRONMENT
+            value: Production
+        image: pabasaravihanga/pitstop-timeservice:latest
+        imagePullPolicy: Always
         name: timeservice
       restartPolicy: Always

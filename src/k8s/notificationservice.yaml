@@ -18,11 +18,12 @@ spec:
         app: notificationservice
         version: "1.0"
     spec:
+
       containers:
       - env:
-        - name: DOTNET_ENVIRONMENT
-          value: Production
-        image: pabasaravihanga/pitstop-notificationservice:1.0
-        imagePullPolicy: IfNotPresent
+          - name: DOTNET_ENVIRONMENT
+            value: Production
+        image: pabasaravihanga/pitstop-notificationservice:latest
+        imagePullPolicy: Always
         name: notificationservice
       restartPolicy: Always
