@@ -55,21 +55,19 @@ jobs:
           docker build -t $DOCKERHUB_USERNAME/pitstop-$SERVICE_NAME:$IMAGE_TAG -f src/$SERVICE_PATH/Dockerfile src/$SERVICE_PATH
           docker push $DOCKERHUB_USERNAME/pitstop-$SERVICE_NAME:$IMAGE_TAG
 
-      - name: Update image tag in deployment YAML
-        if: steps.changed_files.outputs.any_changed == 'true'
+
+      - name: Update all deployment YAMLs with SHA tag
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          SERVICE_NAME: ${{ steps.set_service.outputs.service_name }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          sed -i "s|image: $DOCKERHUB_USERNAME/pitstop-$SERVICE_NAME:.*|image: $DOCKERHUB_USERNAME/pitstop-$SERVICE_NAME:$IMAGE_TAG|g" src/k8s/$SERVICE_NAME.yaml
+          for yaml in src/k8s/*.yaml; do
+            sed -i "s|image: $DOCKERHUB_USERNAME/pitstop-\([a-zA-Z0-9\-]*\):.*|image: $DOCKERHUB_USERNAME/pitstop-\1:$IMAGE_TAG|g" "$yaml"
+          done
 
-      - name: Deploy Service to AKS
-        if: steps.changed_files.outputs.any_changed == 'true'
-        env:
-          SERVICE_NAME: ${{ steps.set_service.outputs.service_name }}
+      - name: Deploy all services to AKS
         run: |
-          kubectl apply -f src/k8s/$SERVICE_NAME.yaml -n pitstop
+          kubectl apply -f src/k8s/ -n pitstop
 
       - name: Login to Azure
         uses: azure/login@v1
