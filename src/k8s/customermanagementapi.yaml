@@ -4,7 +4,7 @@ metadata:
   labels:
     app: customermanagementapi
     version: "1.0"
-  name: customermanagementapi-v1
+  name: customermanagementapi
   namespace: pitstop
 spec:
   replicas: 1
