@@ -16,3 +16,4 @@ COPY --from=build-env /app/out .
 
 # Start
 ENTRYPOINT ["dotnet", "Pitstop.AuditlogService.dll"]
+# micro change for CI/CD

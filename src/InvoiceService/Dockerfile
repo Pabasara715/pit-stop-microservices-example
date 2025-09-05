@@ -14,5 +14,6 @@ FROM pabasaravihanga/pitstop-dotnet-runtime-base:1.0
 WORKDIR /app
 COPY --from=build-env /app/out .
 
+# micro change for CI/CD
 # Start
 ENTRYPOINT ["dotnet", "Pitstop.InvoiceService.dll"]
