@@ -26,7 +26,7 @@ jobs:
         uses: azure/aks-set-context@v3
         with:
           resource-group: 'pitstop-resources'
-          cluster-name: 'pitstop-lowcost-cluster'
+          cluster-name: 'pitstop-aks-cluster'
 
       - name: Find Changed Service
         id: changed_files
