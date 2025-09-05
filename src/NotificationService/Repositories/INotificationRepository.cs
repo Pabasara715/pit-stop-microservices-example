@@ -7,4 +7,5 @@ public interface INotificationRepository
     Task<IEnumerable<MaintenanceJob>> GetMaintenanceJobsForTodayAsync(DateTime date);
     Task<Customer> GetCustomerAsync(string customerId);
     Task RemoveMaintenanceJobsAsync(IEnumerable<string> jobIds);
+    Task<IEnumerable<MaintenanceJob>> GetMaintenanceJobsAsync(IEnumerable<string> jobIds);
 }

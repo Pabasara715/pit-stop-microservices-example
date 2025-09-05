@@ -70,6 +70,16 @@ public class SqlServerNotificationRepository : INotificationRepository
         }
     }
 
+    public async Task<IEnumerable<MaintenanceJob>> GetMaintenanceJobsAsync(IEnumerable<string> jobIds)
+    {
+        using (SqlConnection conn = new SqlConnection(_connectionString))
+        {
+            return await conn.QueryAsync<MaintenanceJob>(
+                "select * from MaintenanceJob where JobId IN @JobIds",
+                new { JobIds = jobIds });
+        }
+    }
+
     private async Task InitializeDBAsync()
     {
         using (SqlConnection conn = new SqlConnection(_connectionString.Replace("Notification", "master")))
