@@ -20,8 +20,12 @@ public class SMTPEmailNotifier : IEmailNotifier
     {
         using (SmtpClient client = new SmtpClient(_smptServer, _smtpPort))
         {
-            client.UseDefaultCredentials = false;
-            client.Credentials = new NetworkCredential("_username", "_password");
+            // For MailDev, authentication is not required, but if needed, use the actual fields
+            if (!string.IsNullOrEmpty(_userName) && !string.IsNullOrEmpty(_password))
+            {
+                client.UseDefaultCredentials = false;
+                client.Credentials = new NetworkCredential(_userName, _password);
+            }
 
             MailMessage mailMessage = new MailMessage();
             mailMessage.From = new MailAddress(from);

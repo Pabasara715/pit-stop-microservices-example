@@ -70,6 +70,19 @@ public class NotificationWorker : IHostedService, IMessageHandlerCallback
             customer.CustomerId, customer.Name, customer.TelephoneNumber, customer.EmailAddress);
 
         await _repo.RegisterCustomerAsync(customer);
+
+        // Send welcome email
+        StringBuilder body = new StringBuilder();
+        body.AppendLine($"Dear {customer.Name},\n");
+        body.AppendLine($"Welcome to PitStop! We're excited to have you as our customer.\n");
+        body.AppendLine($"You can now schedule maintenance for your vehicles through our system.\n");
+        body.AppendLine($"Best regards,\n");
+        body.AppendLine($"The PitStop crew");
+
+        Log.Information("Sending welcome email to: {CustomerName}", customer.Name);
+
+        await _emailNotifier.SendEmailAsync(
+            customer.EmailAddress, "noreply@pitstop.nl", "Welcome to PitStop!", body.ToString());
     }
 
     private async Task HandleAsync(MaintenanceJobPlanned mjp)
@@ -87,11 +100,65 @@ public class NotificationWorker : IHostedService, IMessageHandlerCallback
             job.JobId, job.CustomerId, job.LicenseNumber, job.StartTime, job.Description);
 
         await _repo.RegisterMaintenanceJobAsync(job);
+
+        // Send confirmation email to customer
+        Customer customer = await _repo.GetCustomerAsync(job.CustomerId);
+        StringBuilder body = new StringBuilder();
+        body.AppendLine($"Dear {customer.Name},\n");
+        body.AppendLine($"Your maintenance appointment has been scheduled successfully.\n");
+        body.AppendLine($"Appointment details:");
+        body.AppendLine($"- Date: {job.StartTime.ToString("dd-MM-yyyy")}");
+        body.AppendLine($"- Time: {job.StartTime.ToString("HH:mm")}");
+        body.AppendLine($"- Vehicle: {job.LicenseNumber}");
+        body.AppendLine($"- Service: {job.Description}\n");
+        body.AppendLine($"Please arrive 10 minutes before your scheduled time and check in at our front desk.\n");
+        body.AppendLine($"If you need to reschedule or cancel, please contact us as soon as possible.\n");
+        body.AppendLine($"Best regards,\n");
+        body.AppendLine($"The PitStop crew");
+
+        Log.Information("Sending maintenance scheduling confirmation email to: {CustomerName}", customer.Name);
+
+        await _emailNotifier.SendEmailAsync(
+            customer.EmailAddress, 
+            "noreply@pitstop.nl", 
+            "Your PitStop Maintenance Appointment Confirmation", 
+            body.ToString());
     }
 
     private async Task HandleAsync(MaintenanceJobFinished mjf)
     {
         Log.Information("Remove finished Maintenance Job: {Id}", mjf.JobId);
+
+        // Get the job details before removing it
+        var jobs = await _repo.GetMaintenanceJobsAsync(new[] { mjf.JobId.ToString() });
+        var job = jobs.FirstOrDefault();
+        
+        if (job != null)
+        {
+            // Get customer details
+            Customer customer = await _repo.GetCustomerAsync(job.CustomerId);
+
+            // Send completion email
+            StringBuilder body = new StringBuilder();
+            body.AppendLine($"Dear {customer.Name},\n");
+            body.AppendLine($"The maintenance service for your vehicle has been completed successfully.\n");
+            body.AppendLine($"Service details:");
+            body.AppendLine($"- Vehicle: {job.LicenseNumber}");
+            body.AppendLine($"- Service completed: {job.Description}");
+            body.AppendLine($"- Completion date: {DateTime.Now.ToString("dd-MM-yyyy HH:mm")}\n");
+            body.AppendLine($"Thank you for choosing PitStop for your vehicle maintenance needs.\n");
+            body.AppendLine($"If you have any questions about the service performed, please don't hesitate to contact us.\n");
+            body.AppendLine($"Best regards,\n");
+            body.AppendLine($"The PitStop crew");
+
+            Log.Information("Sending maintenance completion email to: {CustomerName}", customer.Name);
+
+            await _emailNotifier.SendEmailAsync(
+                customer.EmailAddress, 
+                "noreply@pitstop.nl", 
+                "Your PitStop Maintenance Service is Complete", 
+                body.ToString());
+        }
 
         await _repo.RemoveMaintenanceJobsAsync(new string[] { mjf.JobId.ToString() });
     }
