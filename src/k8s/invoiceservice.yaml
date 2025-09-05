@@ -22,7 +22,7 @@ spec:
       - env:
         - name: DOTNET_ENVIRONMENT
           value: Production
-        image: 058264430765.dkr.ecr.us-east-1.amazonaws.com/pitstop/invoiceservice:1.0
+        image: pabasaravihanga/pitstop-invoiceservice:1.0
         imagePullPolicy: IfNotPresent
         name: invoiceservice
       restartPolicy: Always

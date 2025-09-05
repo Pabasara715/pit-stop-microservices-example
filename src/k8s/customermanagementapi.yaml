@@ -14,8 +14,6 @@ spec:
       version: "1.0"
   template:
     metadata:
-      annotations:
-        linkerd.io/inject: enabled
       labels:
         app: customermanagementapi
         version: "1.0"
@@ -24,10 +22,10 @@ spec:
       - env:
         - name: ASPNETCORE_ENVIRONMENT
           value: Production
-        image: 058264430765.dkr.ecr.us-east-1.amazonaws.com/pitstop/customermanagementapi:1.0
+        image: pabasaravihanga/pitstop-customermanagementapi:1.0
         imagePullPolicy: IfNotPresent
         name: customermanagementapi
         ports:
         - containerPort: 5100
       restartPolicy: Always
----
+  

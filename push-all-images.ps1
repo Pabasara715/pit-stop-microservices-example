@@ -18,6 +18,12 @@ $services = @(
 foreach ($service in $services) {
     $local = "pitstop/$service:1.0"
     $remote = "$DOCKERHUB_USER/pitstop-$service:1.0"
+    # Check if the local image exists
+    $imageExists = docker images -q $local
+    if ([string]::IsNullOrWhiteSpace($imageExists)) {
+        Write-Host "Skipping $($local): image not found."
+        continue
+    }
     Write-Host "Tagging $local as $remote"
     docker tag $local $remote
     Write-Host "Pushing $remote"
