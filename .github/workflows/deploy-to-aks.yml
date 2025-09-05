@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  id-token: write # For AWS OIDC if needed
+  id-token: write
   contents: read
 
 jobs:
@@ -16,7 +16,7 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
-        
+
       - name: Login to Azure
         uses: azure/login@v1
         with:
@@ -26,8 +26,7 @@ jobs:
         uses: azure/aks-set-context@v3
         with:
           resource-group: 'pitstop-resources'
-          cluster-name: 'pitstop-aks-cluster'
-      # ----------------------------------------------------
+          cluster-name: 'pitstop-lowcost-cluster'
 
       - name: Find Changed Service
         id: changed_files
@@ -65,22 +64,13 @@ jobs:
           docker build -t $DOCKERHUB_USERNAME/pitstop-$SERVICE_NAME:$IMAGE_TAG -f src/$SERVICE_PATH/Dockerfile src/$SERVICE_PATH
           docker push $DOCKERHUB_USERNAME/pitstop-$SERVICE_NAME:$IMAGE_TAG
 
-      - name: Install istioctl
+      - name: Install and Deploy with Istio
         run: |
           curl -L https://istio.io/downloadIstio | sh -
-          echo "$HOME/.istioctl/bin" >> $GITHUB_PATH
-
-      - name: Install Istio Control Plane
-        run: |
+          export PATH="$HOME/.istioctl/bin:$PATH"
           cd src/k8s/istio
           chmod +x *.sh
           ./install-istio.sh
-
-      # This step was removed as it was incorrect and redundant
-      # - name: Update all deployment YAMLs with SHA tag
-      
-      - name: Deploy All Services to AKS
-        run: |
-          cd src/k8s/scripts
+          cd ../scripts
           chmod +x start-all.sh
           ./start-all.sh --istio
