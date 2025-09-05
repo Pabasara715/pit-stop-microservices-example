@@ -7,6 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  id-token: write # For AWS OIDC if needed
   contents: read
 
 jobs:
@@ -15,6 +16,18 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set kubectl context for AKS
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: 'pitstop-resources'
+          cluster-name: 'pitstop-aks-cluster'
+      # ----------------------------------------------------
 
       - name: Find Changed Service
         id: changed_files
@@ -25,7 +38,6 @@ jobs:
           files_ignore: |
             src/k8s/**
 
-      # --- THIS STEP IS MODIFIED ---
       - name: Set Service Name and Path
         id: set_service
         if: steps.changed_files.outputs.any_changed == 'true'
@@ -41,8 +53,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # --- THIS STEP IS MODIFIED ---
-
       - name: Build, Tag, and Push to Docker Hub
         if: steps.changed_files.outputs.any_changed == 'true'
         env:
@@ -55,32 +65,6 @@ jobs:
           docker build -t $DOCKERHUB_USERNAME/pitstop-$SERVICE_NAME:$IMAGE_TAG -f src/$SERVICE_PATH/Dockerfile src/$SERVICE_PATH
           docker push $DOCKERHUB_USERNAME/pitstop-$SERVICE_NAME:$IMAGE_TAG
 
-
-      - name: Update all deployment YAMLs with SHA tag
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          for yaml in src/k8s/*.yaml; do
-            sed -i "s|image: $DOCKERHUB_USERNAME/pitstop-\([a-zA-Z0-9\-]*\):.*|image: $DOCKERHUB_USERNAME/pitstop-\1:$IMAGE_TAG|g" "$yaml"
-          done
-
-      - name: Deploy all services to AKS
-        run: |
-          export KUBECONFIG=$(ls /home/runner/work/_temp/kubeconfig_*)
-          kubectl apply -f src/k8s/ -n pitstop
-
-      - name: Login to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Set kubectl context for AKS
-        uses: azure/aks-set-context@v3
-        with:
-          resource-group: 'pitstop-resources'
-          cluster-name: 'pitstop-aks-cluster'
-
       - name: Install istioctl
         run: |
           curl -L https://istio.io/downloadIstio | sh -
@@ -92,7 +76,10 @@ jobs:
           chmod +x *.sh
           ./install-istio.sh
 
-      - name: Deploy All Services to EKS
+      # This step was removed as it was incorrect and redundant
+      # - name: Update all deployment YAMLs with SHA tag
+      
+      - name: Deploy All Services to AKS
         run: |
           cd src/k8s/scripts
           chmod +x start-all.sh
