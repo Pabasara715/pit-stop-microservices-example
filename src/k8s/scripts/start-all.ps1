@@ -1,46 +1,33 @@
-# If started with argument -nomesh, the solution is started without service-mesh.
-# If started with argument -istio, the solution is started with the Istio service-mesh.
-# If started with argument -linkerd, the solution is started with the Linkerd service-mesh.
+# This script deploys the entire Pitstop application to Kubernetes.
 
 param (
-    [switch]$nomesh = $false,
     [switch]$istio = $false,
-    [switch]$linkerd = $false
+    [string]$tag = "1.0"
 )
 
-if (-not $nomesh -and -not $istio -and -not $linkerd)
-{
-    echo "Error: You must specify how to start Pitstop:"
-    echo "  start-all.ps1 < -nomesh | -istio | -linkerd >."
-    return
-}
-
 $meshPostfix = ''
-if (-not $nomesh)
-{
-    if ($istio -and $linkerd) {
-        echo "Error: You can specify only 1 mesh implementation."
-        return
-    }
-
-    if ($istio) {
-        $meshPostfix = '-istio'
-        echo "Starting Pitstop with Istio service mesh."
-
-        # disable global istio side-car injection (only for annotated pods)
-        & "../istio/disable-default-istio-injection.ps1"
-    }
-
-    if ($linkerd) {
-        $meshPostfix = '-linkerd'
-        echo "Starting Pitstop with Linkerd service mesh."
-    }
+if ($istio) {
+    $meshPostfix = '-istio'
+    Write-Host "Starting Pitstop with Istio and Image Tag: $tag"
+    # Disable global Istio side-car injection
+    & "../istio/disable-default-istio-injection.ps1"
 }
-else
-{
-    echo "Starting Pitstop without service mesh."
+else {
+    Write-Host "Starting Pitstop deployment without service mesh and Image Tag: $tag"
 }
 
+# Update the image tag in all Kubernetes deployment YAML files in the parent directory
+Write-Host "Updating image tags in YAML files..."
+$yamlFiles = Get-ChildItem -Path ".." -Filter "*.yaml"
+$regex = "image: pabasaravihanga/pitstop-([a-zA-Z0-9\-]*):.*"
+$replaceString = "image: pabasaravihanga/pitstop-`$1:$tag"
+
+foreach ($file in $yamlFiles) {
+    (Get-Content -Path $file.FullName) -replace $regex, $replaceString | Set-Content -Path $file.FullName
+}
+
+# Apply all Kubernetes manifests
+Write-Host "Applying Kubernetes manifests..."
 kubectl apply `
     -f ../pitstop-namespace$meshPostfix.yaml `
     -f ../rabbitmq.yaml `
@@ -57,3 +44,5 @@ kubectl apply `
     -f ../vehiclemanagementapi$meshPostfix.yaml `
     -f ../workshopmanagementapi$meshPostfix.yaml `
     -f ../webapp$meshPostfix.yaml
+
+Write-Host "Deployment script finished."

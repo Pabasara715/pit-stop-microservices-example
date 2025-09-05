@@ -64,24 +64,19 @@ jobs:
           docker build -t $DOCKERHUB_USERNAME/pitstop-$SERVICE_NAME:$IMAGE_TAG -f src/$SERVICE_PATH/Dockerfile src/$SERVICE_PATH
           docker push $DOCKERHUB_USERNAME/pitstop-$SERVICE_NAME:$IMAGE_TAG
 
-      - name: Update Kubernetes Manifest with new Image Tag
-        if: steps.changed_files.outputs.any_changed == 'true'
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          SERVICE_NAME: ${{ steps.set_service.outputs.service_name }}
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          echo "Updating image tag in deployment manifest for $SERVICE_NAME"
-          # This command finds the correct YAML file and replaces the image tag
-          sed -i "s|image: $DOCKERHUB_USERNAME/pitstop-$SERVICE_NAME:.*|image: $DOCKERHUB_USERNAME/pitstop-$SERVICE_NAME:$IMAGE_TAG|g" src/k8s/$SERVICE_NAME-istio.yaml
-
-      - name: Install and Deploy with Istio
+      - name: Install Istio Control Plane
         run: |
           curl -L https://istio.io/downloadIstio | sh -
           export PATH="$HOME/.istioctl/bin:$PATH"
           cd src/k8s/istio
           chmod +x *.sh
           ./install-istio.sh
-          cd ../scripts
+
+      - name: Deploy All Services to AKS
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          cd src/k8s/scripts
           chmod +x start-all.sh
-          ./start-all.sh --istio
+          # Pass the Istio flag and the new tag to the deployment script
+          ./start-all.sh --istio --tag $IMAGE_TAG
