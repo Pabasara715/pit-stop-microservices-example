@@ -67,6 +67,7 @@ jobs:
 
       - name: Deploy all services to AKS
         run: |
+          export KUBECONFIG=$(ls /home/runner/work/_temp/kubeconfig_*)
           kubectl apply -f src/k8s/ -n pitstop
 
       - name: Login to Azure
