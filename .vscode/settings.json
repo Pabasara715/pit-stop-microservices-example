@@ -1,0 +1,5 @@
+{
+    "yaml.schemas": {
+        "https://www.schemastore.org/github-workflow.json": "file:///d%3A/Academics/Semester_7/Cloud%20Computing/project/pit-stop-microservices-example/.github/workflows/deploy-to-aks.yml"
+    }
+}
