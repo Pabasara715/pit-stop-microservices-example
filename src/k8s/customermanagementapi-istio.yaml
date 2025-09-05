@@ -3,20 +3,20 @@ kind: Deployment
 metadata:
   labels:
     app: customermanagementapi
-    version: "2.0"
-  name: customermanagementapi-v2
+    version: "1.0"
+  name: customermanagementapi-v1
   namespace: pitstop
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: customermanagementapi
-      version: "2.0"
+      version: "1.0"
   template:
     metadata:
       labels:
         app: customermanagementapi
-        version: "2.0"
+        version: "1.0"
       annotations:
         sidecar.istio.io/inject: "true"
     spec:
@@ -24,9 +24,10 @@ spec:
       - env:
         - name: ASPNETCORE_ENVIRONMENT
           value: Production
-        image: 058264430765.dkr.ecr.us-east-1.amazonaws.com/pitstop/customermanagementapi:2.0
+        image: pabasaravihanga/pitstop-customermanagementapi:1.0
         imagePullPolicy: IfNotPresent
         name: customermanagementapi
         ports:
         - containerPort: 5100
       restartPolicy: Always
+  

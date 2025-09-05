@@ -20,13 +20,15 @@ spec:
     spec:
       containers:
       - env:
-        - name: ACCEPT_EULA
-          value: "Y"
-        image: datalust/seq:latest
+          - name: ACCEPT_EULA
+            value: "Y"
+          - name: SEQ_FIRSTRUN_NOAUTHENTICATION
+            value: "true"
+        image: datalust/seq:2024.1
         imagePullPolicy: IfNotPresent
         name: logserver
         ports:
-        - containerPort: 80
+          - containerPort: 80
       restartPolicy: Always
 
 ---

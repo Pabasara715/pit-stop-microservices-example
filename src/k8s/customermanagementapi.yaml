@@ -17,14 +17,12 @@ spec:
       labels:
         app: customermanagementapi
         version: "1.0"
-      annotations:
-        sidecar.istio.io/inject: "true"
     spec:
       containers:
       - env:
         - name: ASPNETCORE_ENVIRONMENT
           value: Production
-        image: 058264430765.dkr.ecr.us-east-1.amazonaws.com/pitstop/customermanagementapi:1.0
+        image: pabasaravihanga/pitstop-customermanagementapi:1.0
         imagePullPolicy: IfNotPresent
         name: customermanagementapi
         ports:

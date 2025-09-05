@@ -1,3 +1,40 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: webapp-gateway
+  namespace: pitstop
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: webapp
+  namespace: pitstop
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - webapp-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: webapp
+        port:
+          number: 7005
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -24,7 +61,7 @@ spec:
       - env:
         - name: ASPNETCORE_ENVIRONMENT
           value: Production
-        image: 058264430765.dkr.ecr.us-east-1.amazonaws.com/pitstop/webapp:1.0
+        image: pabasaravihanga/pitstop-webapp:1.0
         imagePullPolicy: IfNotPresent
         name: webapp
         ports:
