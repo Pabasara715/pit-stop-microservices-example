@@ -1,10 +1,32 @@
-docker push pitstop/customermanagementapi:1.0
-docker push pitstop/customermanagementapi:2.0
-docker push pitstop/webapp:1.0
-docker push pitstop/workshopmanagementeventhandler:1.0
-docker push pitstop/timeservice:1.0
-docker push pitstop/notificationservice:1.0
-docker push pitstop/invoiceservice:1.0
-docker push pitstop/auditlogservice:1.0
-docker push pitstop/workshopmanagementapi:1.0
-docker push pitstop/vehiclemanagementapi:1.0
+# PowerShell script to tag and push all Pitstop images to Docker Hub
+# Set your Docker Hub username
+$DOCKERHUB_USER = "pabasaravihanga"
+
+# List of services
+$services = @(
+    "auditlogservice",
+    "customermanagementapi",
+    "invoiceservice",
+    "notificationservice",
+    "timeservice",
+    "vehiclemanagementapi",
+    "webapp",
+    "workshopmanagementapi",
+    "workshopmanagementeventhandler"
+)
+
+foreach ($service in $services) {
+    $local = "pitstop/$service:1.0"
+    $remote = "$DOCKERHUB_USER/pitstop-$service:1.0"
+    Write-Host "Tagging $local as $remote"
+    docker tag $local $remote
+    Write-Host "Pushing $remote"
+    docker push $remote
+}
+
+Write-Host "\n---"
+Write-Host "Update your Kubernetes manifests to use images like:"
+Write-Host "  image: pabasaravihanga/pitstop-<servicename>:1.0"
+Write-Host "Then redeploy with:"
+Write-Host "  ./start-all.ps1 -istio"
+Write-Host "---"
