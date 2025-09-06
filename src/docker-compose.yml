@@ -2,6 +2,7 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
+    platform: linux/amd64
     container_name: rabbitmq
     volumes:
       - rabbitmqdata:/var/lib/rabbitmq
@@ -14,6 +15,7 @@ services:
 
   sqlserver:
     image: mcr.microsoft.com/azure-sql-edge
+    platform: linux/amd64
     container_name: sqlserver
     volumes:
       - sqlserverdata:/var/opt/mssql
@@ -26,6 +28,7 @@ services:
 
   mailserver:
     image: maildev/maildev:1.1.0
+    platform: linux/amd64
     container_name: mailserver
     ports:
       - "25:25"
@@ -33,6 +36,7 @@ services:
 
   logserver:
     image: datalust/seq:latest
+    platform: linux/amd64
     container_name: logserver
     ports:
       - "5341:80"
@@ -42,7 +46,11 @@ services:
 
   vehiclemanagementapi:
     image: pitstop/vehiclemanagementapi:1.0
-    build: VehicleManagementAPI
+    platform: linux/amd64
+    build: 
+      context: VehicleManagementAPI
+      platforms:
+        - linux/amd64
     depends_on:
       - rabbitmq
       - sqlserver
@@ -53,7 +61,11 @@ services:
 
   customermanagementapi:
     image: pitstop/customermanagementapi:1.0
-    build: CustomerManagementAPI
+    platform: linux/amd64
+    build:
+      context: CustomerManagementAPI
+      platforms:
+        - linux/amd64
     depends_on:
       - rabbitmq
       - sqlserver
@@ -64,7 +76,11 @@ services:
 
   workshopmanagementapi:
     image: pitstop/workshopmanagementapi:1.0
-    build: WorkshopManagementAPI
+    platform: linux/amd64
+    build:
+      context: WorkshopManagementAPI
+      platforms:
+        - linux/amd64
     depends_on:
       - rabbitmq
       - sqlserver
@@ -75,7 +91,11 @@ services:
 
   auditlogservice:
     image: pitstop/auditlogservice:1.0
-    build: AuditlogService
+    platform: linux/amd64
+    build:
+      context: AuditlogService
+      platforms:
+        - linux/amd64
     container_name: auditlogservice
     depends_on:
       - rabbitmq
@@ -84,7 +104,11 @@ services:
 
   invoiceservice:
     image: pitstop/invoiceservice:1.0
-    build: InvoiceService
+    platform: linux/amd64
+    build:
+      context: InvoiceService
+      platforms:
+        - linux/amd64
     container_name: invoiceservice
     depends_on:
       - rabbitmq
@@ -95,7 +119,11 @@ services:
 
   notificationservice:
     image: pitstop/notificationservice:1.0
-    build: NotificationService
+    platform: linux/amd64
+    build:
+      context: NotificationService
+      platforms:
+        - linux/amd64
     container_name: notificationservice
     depends_on:
       - rabbitmq
@@ -106,7 +134,11 @@ services:
 
   timeservice:
     image: pitstop/timeservice:1.0
-    build: TimeService
+    platform: linux/amd64
+    build:
+      context: TimeService
+      platforms:
+        - linux/amd64
     container_name: timeservice
     depends_on:
       - rabbitmq
@@ -115,7 +147,11 @@ services:
 
   workshopmanagementeventhandler:
     image: pitstop/workshopmanagementeventhandler:1.0
-    build: WorkshopManagementEventHandler
+    platform: linux/amd64
+    build:
+      context: WorkshopManagementEventHandler
+      platforms:
+        - linux/amd64
     container_name: workshopmanagementeventhandler
     depends_on:
       - rabbitmq
@@ -125,7 +161,11 @@ services:
 
   webapp:
     image: pitstop/webapp:1.0
-    build: WebApp
+    platform: linux/amd64
+    build:
+      context: WebApp
+      platforms:
+        - linux/amd64
     container_name: webapp
     depends_on:
       - customermanagementapi
